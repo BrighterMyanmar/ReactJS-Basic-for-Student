@@ -1,65 +1,66 @@
-import { setSelectionRange } from '@testing-library/user-event/dist/utils';
 import React, { useState, useEffect } from 'react';
-import User from "./components/users/User";
-import AddUser from './components/users/AddUser';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Post from './components/Post';
+import AddPost from './components/AddPost';
+import PostDetail from './components/PostDetail';
+import EditPost from './components/EditPost';
+
 
 function App() {
-   let [users, setUsers] = useState([]);
-   let [showForm, setShowForm] = useState(false);
+   const END_POINT = "http://localhost:9000/posts";
+   let [posts, setPosts] = useState([]);
 
-   useEffect(() => {
-      fetch("https://randomuser.me/api/?results=10")
-         .then(res => res.json())
-         .then(users => {
-            let rawUsers = users.results;
-            let filteredUsers = rawUsers.map(usr => {
-               return {
-                  uuid: usr.login.uuid,
-                  name: `${usr.name.title} ${usr.name.first} ${usr.name.last}`,
-                  phone: usr.phone,
-                  cell: usr.cell,
-                  image: usr.picture.thumbnail
-               }
-            });
-            setUsers(filteredUsers);
-         })
-         .catch(err => console.log(err));
+   const addnewPost = async (post) => {
+      console.log("Post is ", post);
+      await fetch(END_POINT, {
+         method: "POST",
+         body: JSON.stringify({
+            title: post.title,
+            desc: post.desc
+         }),
+         headers: {
+            "content-type": "application/json"
+         }
+      });
+      setPosts([post, ...posts]);
+   }
+   useEffect(async () => {
+      let posts = await (await fetch(END_POINT)).json(); // GET
+      setPosts(posts);
    }, []);
 
-   const removeUserHandler = (uuid) => {
-      let remainUsers = users.filter(usr => usr.uuid != uuid);
-      setUsers(remainUsers);
+   const postDeleteHandler = async (id) => {
+      await fetch(END_POINT + "/" + id, {
+         method: "DELETE"
+      });
+      setPosts(posts.filter(post => post.id != id));
    }
-   const addUserHandler = (user) => {
-      let newUsers = [user, ...users];
-      setUsers(newUsers);
-      setShowForm(!showForm);
-   }
-   const showFormHandler = () => {
-      setShowForm(!showForm);
+
+   const updatePostHandler = async (updatePost) => {
+      await fetch(END_POINT + "/" + updatePost.id, {
+         method: "PATCH",
+         body: JSON.stringify(updatePost),
+         headers: {
+            "content-type": "application/json"
+         }
+      });
+      setPosts(posts.map(po => po.id === updatePost.id ? updatePost : po));
    }
 
    return (
-      <div className="container my-5">
-         <div>
-            <h1 className="text-center my-5 text-info">Our Employee</h1>
-            <button className="btn btn-primary btn-sm my-2" onClick={showFormHandler}>Add User</button>
-            {showForm && <AddUser addUser={addUserHandler} />}
-            {
-               users.map(usr => <User key={usr.uuid} user={usr} remove={removeUserHandler} />)
-            }
-         </div>
-      </div>
+      <div className="container">
+         <h1 className="text-center text-info my-3">Posts</h1>
+         <Router>
+            <Routes>
+               <Route path="/" element={<Post posts={posts} removePost={postDeleteHandler} />} />
+               <Route path="/add" element={<AddPost addPost={addnewPost} />}></Route>
+               <Route path="/post/:id" element={<PostDetail />} />
+               <Route path="/post/edit/:id" element={<EditPost updatePost={updatePostHandler} />} />
+            </Routes>
+         </Router>
+      </div >
    );
 }
 
 
 export default App;
-
-
-/* <User image={users[0].image} phone={users[0].phone} cell={users[0].cell} name={users[0].name} />
-        <User image={users[1].image} phone={users[1].phone} cell={users[1].cell} name={users[1].name} />
-        <User image={users[2].image} phone={users[2].phone} cell={users[2].cell} name={users[2].name} />  */
-/* <User data={users[0]}/>
-            <User data={users[1]}/>
-            <User data={users[2]}/> */
