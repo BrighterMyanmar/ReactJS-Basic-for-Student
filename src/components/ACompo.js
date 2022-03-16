@@ -1,9 +1,9 @@
-import React,{useContext} from 'react';
-import { TitleContext } from './TestContext';
+import React from 'react';
+import { useTitleContext } from './TestContext';
 
 
 export default function ACompo() {
-   const {title} = useContext(TitleContext);
+   const {title} = useTitleContext()
 
    return (
       <>

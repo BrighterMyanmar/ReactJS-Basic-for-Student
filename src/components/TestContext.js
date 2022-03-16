@@ -1,6 +1,7 @@
-import React, { useState, createContext } from 'react';
+import React, { useState, createContext, useContext } from 'react';
 
-export const TitleContext = createContext();
+const TitleContext = createContext();
+export const useTitleContext = () => useContext(TitleContext);
 
 function TitleContextProvider(props) {
    const [title, setTitle] = useState("Testing");

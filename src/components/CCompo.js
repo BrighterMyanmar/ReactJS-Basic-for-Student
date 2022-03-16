@@ -1,8 +1,8 @@
-import React, { useContext } from 'react';
-import { TitleContext } from './TestContext';
+import React from 'react';
+import { useTitleContext } from './TestContext';
 
 export default function CCompo() {
-   const { title, changeTitle } = useContext(TitleContext);
+   const { title, changeTitle } = useTitleContext();
    return (
       <>
          <h1>C Component Title : {title}</h1>
