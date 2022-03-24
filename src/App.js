@@ -1,38 +1,46 @@
-import React, { useState } from 'react';
-import { ThemeProvider } from 'styled-components';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { GlobalCSS } from './styles/GlobalCSS';
-import { Container } from './styles/Shares';
-import Home from './components/Home';
-import Login from './components/Login';
-import LoginContextProvider from './store/LoginContextApi';
-import RouteGurad from './helpers/RouteGuard';
+import { useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import TCompo from './components/TCompo';
+import { actionCreators } from './stores/actionCrators';
 
-const theme = {
-   colors: {
-      primary: "aliceblue"
-   }
-}
 
 function App() {
+   const nameRef = useRef();
+   const phoneRef = useRef();
+
+   const account = useSelector(state => state.account);
+   const users = useSelector(state => state.user);
+   const dispatch = useDispatch();
+   const { add, remove, insert, drop } = bindActionCreators(actionCreators, dispatch);
+
+   const addUser = (e) => {
+      e.preventDefault();
+      let user = {
+         phone: phoneRef.current.value,
+         name: nameRef.current.value
+      }
+      insert(user);
+      phoneRef.current.value = "";
+      nameRef.current.value = "";
+   }
    return (
-      <ThemeProvider theme={theme}>
-         <GlobalCSS />
-         <Container>
-            <LoginContextProvider>
-               <Router>
-                  <Routes>
-                     <Route path="/" element={<Login />} />
-                     <Route path="/home" element={
-                        <RouteGurad>
-                           <Home />
-                        </RouteGurad>
-                     } />
-                  </Routes>
-               </Router>
-            </LoginContextProvider>
-         </Container>
-      </ThemeProvider>
+      < div >
+         <h1>{account}</h1>
+         {
+            users.map(user => <p onClick={()=>drop(user)}>{user.name} : {user.phone}</p>)
+         }
+         <button onClick={() => add(50)}>Add</button>
+         <button onClick={() => remove(50)}>Remove</button>
+         <br /> <br />
+         <form onSubmit={addUser}>
+            <input type="phone" ref={phoneRef} /><br /> <br />
+            <input type="name" ref={nameRef} />
+            <input type="submit"/>
+         </form>
+         <hr />
+         <TCompo />
+      </div >
    );
 }
 
